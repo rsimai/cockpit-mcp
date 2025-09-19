@@ -17,32 +17,83 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useEffect, useState } from 'react';
-import { Alert } from "@patternfly/react-core/dist/esm/components/Alert/index.js";
-import { Card, CardBody, CardTitle } from "@patternfly/react-core/dist/esm/components/Card/index.js";
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from "@patternfly/react-core/dist/esm/components/Button/index.js";
+import { TextInput } from "@patternfly/react-core/dist/esm/components/TextInput/index.js";
+import { TextArea } from "@patternfly/react-core/dist/esm/components/TextArea/index.js";
+import { Stack, StackItem } from "@patternfly/react-core/dist/esm/layouts/Stack/index.js";
 
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
 
 export const Application = () => {
-    const [hostname, setHostname] = useState(_("Unknown"));
+    const [input, setInput] = useState('');
+    const [output, setOutput] = useState('');
+    const [isRunning, setIsRunning] = useState(false);
+    const outputRef = useRef(null);
 
     useEffect(() => {
-        const hostname = cockpit.file('/etc/hostname');
-        hostname.watch(content => setHostname(content?.trim() ?? ""));
-        return hostname.close;
-    }, []);
+        if (outputRef.current) {
+            outputRef.current.scrollTop = outputRef.current.scrollHeight;
+        }
+    }, [output]);
+
+    const sendMessage = () => {
+        if (!input.trim()) return;
+        
+        setOutput(prev => prev + `> ${input}\n`);
+        
+        // Execute mcphost wrapper
+        const proc = cockpit.spawn(['/home/robert/git/cockpit-mcp/mcphost-wrapper', input], { err: 'message' });
+        
+        proc.done((data) => {
+            setOutput(prev => prev + data + '\n\n');
+        });
+        
+        proc.fail((error) => {
+            setOutput(prev => prev + `Error: ${error}\n\n`);
+        });
+        
+        setInput('');
+    };
 
     return (
-        <Card>
-            <CardTitle>Starter Kit</CardTitle>
-            <CardBody>
-                <Alert
-                    variant="info"
-                    title={ cockpit.format(_("Running on $0"), hostname) }
+        <Stack hasGutter>
+            <StackItem>
+                <h1>MCP</h1>
+            </StackItem>
+            <StackItem>
+                <TextInput
+                    value={input}
+                    onChange={(_, value) => setInput(value)}
+                    placeholder={_("Enter message...")}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                 />
-            </CardBody>
-        </Card>
+            </StackItem>
+            <StackItem>
+                <Button onClick={sendMessage} isDisabled={!input.trim()}>
+                    {_("Send")}
+                </Button>
+                {' '}
+                <Button variant="secondary" onClick={() => {
+                    setOutput(prev => prev + "> What are your capabilities?\n");
+                    const proc = cockpit.spawn(['/home/robert/git/cockpit-mcp/mcp-capabilities'], { err: 'message' });
+                    proc.done((data) => setOutput(prev => prev + data + '\n\n'));
+                    proc.fail((error) => setOutput(prev => prev + `Error: ${error}\n\n`));
+                }}>
+                    {_("Show Capabilities")}
+                </Button>
+            </StackItem>
+            <StackItem isFilled>
+                <TextArea
+                    ref={outputRef}
+                    value={output}
+                    readOnly
+                    style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}
+                    placeholder={_("Output will appear here...")}
+                />
+            </StackItem>
+        </Stack>
     );
 };
