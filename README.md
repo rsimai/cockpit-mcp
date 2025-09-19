@@ -1,6 +1,6 @@
 # Cockpit MCP
 
-A Cockpit module that provides a web interface for interacting with MCP (Model Context Protocol) hosts using local Ollama models.
+A Cockpit module that provides a web interface for interacting with MCP (Model Context Protocol) hosts using local Ollama models. With kudos to Claude, use at your own risk. 
 
 ## How It Works
 
@@ -66,7 +66,7 @@ The flow:
 
 ### Usage
 
-1. Access Cockpit web interface
+1. Access Cockpit web interface as regular user
 2. Navigate to "MCP" module
 3. Click "Show Capabilities" to see available tools
 4. Type messages like:
@@ -79,6 +79,6 @@ The flow:
 
 - **File Operations**: read_file, write_file, list_directory
 - **Shell Commands**: bash command execution
-- **Local Model**: No API keys required, uses Ollama
+- **Local Model**: No API keys required, uses local Ollama
 
 The model automatically chooses appropriate tools based on your requests.
