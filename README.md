@@ -1,6 +1,8 @@
 # Cockpit MCP
 
-A Cockpit module that provides a web interface for interacting with MCP (Model Context Protocol) hosts using local Ollama models. With kudos to Claude, use at your own risk. 
+A Cockpit module that provides a web interface for interacting with MCP (Model Context Protocol) hosts using local Ollama models.
+
+![Cockpit MCP](cockpit-mcp.png) With kudos to Claude, use at your own risk. It's a working Demo, not more, not less.
 
 ## How It Works
 
